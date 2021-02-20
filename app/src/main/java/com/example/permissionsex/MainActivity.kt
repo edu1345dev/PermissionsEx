@@ -4,14 +4,18 @@ import android.Manifest
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
+import androidx.appcompat.app.AlertDialog
 
 class MainActivity : AppCompatActivity() {
-    private val permissionsHelper = PermissionsHelper(this)
-    private val sharedPreferencesHelper = SharedPreferencesHelper(this)
+    private lateinit var sharedPreferencesHelper: SharedPreferencesHelper
+    private lateinit var permissionsHelper: PermissionsHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        sharedPreferencesHelper = SharedPreferencesHelper(this)
+        permissionsHelper = PermissionsHelper(this, sharedPreferencesHelper)
 
         initViews()
     }
@@ -19,19 +23,22 @@ class MainActivity : AppCompatActivity() {
     override fun onStart() {
         super.onStart()
 
-        if (shouldAskUserToGrantPermissions()){
-            //TODO show dialog asking user to grant permission
+        if (shouldAskUserToGrantPermissions()) {
+            AlertDialog.Builder(this).setTitle("Alerta de uso de recursos do sistema")
+                .setMessage("Va as configuraçoes para dar as permissoes")
+                .setPositiveButton("Valeu") { dialog, _ ->
+                    dialog.dismiss()
+                }.show()
         }
     }
 
     private fun shouldAskUserToGrantPermissions(): Boolean {
-        return false
+        return sharedPreferencesHelper.getShowAlertOnStartUp()
     }
 
     private fun initViews() {
         val btWriteExternal = findViewById<Button>(R.id.bt_write_external)
         val btCamera = findViewById<Button>(R.id.bt_camera)
-        val btMaps = findViewById<Button>(R.id.bt_maps)
         val btAll = findViewById<Button>(R.id.bt_all)
 
         btWriteExternal.setOnClickListener {
@@ -41,11 +48,6 @@ class MainActivity : AppCompatActivity() {
 
         btCamera.setOnClickListener {
             val permission = Manifest.permission.CAMERA
-            requestPermission(permission)
-        }
-
-        btMaps.setOnClickListener {
-            val permission = Manifest.permission.ACCESS_FINE_LOCATION
             requestPermission(permission)
         }
 

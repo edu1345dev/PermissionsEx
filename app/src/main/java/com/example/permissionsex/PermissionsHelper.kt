@@ -4,19 +4,28 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.os.Build
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 
-class PermissionsHelper(private val activity: Activity) {
+class PermissionsHelper(
+    private val activity: Activity,
+    private val sharedPreferencesHelper: SharedPreferencesHelper
+) {
     fun requestPermission(permission: String) {
         val isGranted = ContextCompat.checkSelfPermission(activity, permission)
 
         if (isGranted != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity,
+            ActivityCompat.requestPermissions(
+                activity,
                 arrayOf(permission),
-                1)
+                1
+            )
         } else {
-            Log.d(PermissionsHelper::class.java.toString(), "permission already granted: $permission")
+            Log.d(
+                PermissionsHelper::class.java.toString(),
+                "permission already granted: $permission"
+            )
         }
     }
 
@@ -24,15 +33,21 @@ class PermissionsHelper(private val activity: Activity) {
         val permissionsNotGranted = mutableListOf<String>()
 
         permissions.forEach {
-            if (ContextCompat.checkSelfPermission(activity, it) != PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(
+                    activity,
+                    it
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 permissionsNotGranted.add(it)
             }
         }
 
         if (permissionsNotGranted.isNotEmpty()) {
-            ActivityCompat.requestPermissions(activity,
+            ActivityCompat.requestPermissions(
+                activity,
                 permissionsNotGranted.toTypedArray(),
-                2)
+                2
+            )
         } else {
             Log.d(PermissionsHelper::class.java.toString(), "all permission granted")
         }
@@ -48,9 +63,17 @@ class PermissionsHelper(private val activity: Activity) {
         when (requestCode) {
             1 -> {
                 if (shouldAskRationale(permissions[0])) {
-                    requestPermission(permissions[0])
-                }else{
-                    //TODO callback - should warn user??
+                    AlertDialog.Builder(activity)
+                        .setTitle("Alerta de permissão necessária")
+                        .setMessage("Precisamos da permissao ${permissions[0]} pra funcionar corretamente.")
+                        .setPositiveButton("Tudo bem") { dialog, _ ->
+                            requestPermission(permissions[0])
+                        }
+                        .setNegativeButton("Não quero") { dialog, _ ->
+                            dialog.dismiss()
+                        }.show()
+                } else {
+                    sharedPreferencesHelper.putShowAlertOnStartUp(true)
                 }
             }
             else -> {
