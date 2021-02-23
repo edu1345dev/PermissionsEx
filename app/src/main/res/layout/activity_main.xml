@@ -24,12 +24,6 @@
         android:text="Permissao de câmera"/>
 
     <Button
-        android:id="@+id/bt_maps"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Permissao de mapa"/>
-
-    <Button
         android:id="@+id/bt_all"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
